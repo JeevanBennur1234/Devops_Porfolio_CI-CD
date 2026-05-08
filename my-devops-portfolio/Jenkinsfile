@@ -2,62 +2,107 @@ pipeline {
     agent any
     
     environment {
-        // Defines the Node.js version to use (if using NodeJS plugin in Jenkins)
-        // Alternatively, use a Docker agent with Node pre-installed
+        // Node Environment
         NODE_ENV = 'production'
         
-        // AWS configuration (ensure credentials are set in Jenkins)
-        AWS_REGION = 'us-east-1'
-        S3_BUCKET = 'your-portfolio-bucket-name'
-        CLOUDFRONT_DIST_ID = 'YOUR_CLOUDFRONT_DISTRIBUTION_ID'
+        // AWS Configuration
+        // Ensure these environment variables are set in Jenkins or use Credentials Binding plugin
+        AWS_DEFAULT_REGION = 'us-east-1'
+        S3_BUCKET_NAME = 'your-portfolio-bucket-name' // Replace with your bucket name
+        CLOUDFRONT_DIST_ID = 'YOUR_CLOUDFRONT_DISTRIBUTION_ID' // Replace with your Distribution ID
+        
+        // Notification Configuration
+        // SLACK_CHANNEL = '#deployments'
+        // NOTIFICATION_EMAIL = 'devops@example.com'
+    }
+
+    options {
+        timeout(time: 15, unit: 'MINUTES')
+        disableConcurrentBuilds()
+        timestamps()
     }
 
     stages {
-        stage('Checkout') {
+        stage('1. Checkout Code') {
             steps {
+                echo 'Checking out source code...'
                 checkout scm
             }
         }
 
-        stage('Install Dependencies') {
+        stage('2. Install Dependencies') {
             steps {
+                echo 'Installing npm dependencies...'
+                // Using npm ci for reliable, reproducible builds based on package-lock.json
                 sh 'npm ci'
             }
         }
 
-        stage('Build') {
+        stage('3. Run Tests') {
             steps {
-                // Ensure environment variables needed for build are passed here
-                // e.g. withCredentials or explicitly exporting
+                echo 'Running tests and linting...'
+                // If you have jest/vitest tests, you would run 'npm test' here
+                // For now, we will run the linter to ensure code quality
+                sh 'npm run lint'
+            }
+            // Optional: Continue even if tests fail, or fail the build immediately.
+        }
+
+        stage('4. Build React App') {
+            steps {
+                echo 'Building the production bundle...'
+                // Ensure environment variables needed by Vite (e.g., VITE_FORMSPREE_ENDPOINT)
+                // are injected into the Jenkins environment before this step.
                 sh 'npm run build'
             }
         }
 
-        stage('Deploy to S3') {
+        stage('5. Deploy to AWS S3') {
             steps {
-                withCredentials([aws(credentialsId: 'aws-credentials-id', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                echo 'Deploying static files to S3...'
+                // Using Jenkins credentials binding for AWS keys
+                withCredentials([aws(credentialsId: 'aws-portfolio-credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
                     sh 'chmod +x scripts/deploy.sh'
                     sh './scripts/deploy.sh'
                 }
             }
         }
 
-        stage('Invalidate CloudFront Cache') {
+        stage('6. Invalidate CloudFront Cache') {
             steps {
-                withCredentials([aws(credentialsId: 'aws-credentials-id', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-                    sh 'chmod +x scripts/invalidate.sh'
-                    sh './scripts/invalidate.sh'
+                echo 'Invalidating CloudFront edge caches...'
+                withCredentials([aws(credentialsId: 'aws-portfolio-credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                    sh 'chmod +x scripts/cloudfront-invalidate.sh'
+                    sh './scripts/cloudfront-invalidate.sh'
                 }
             }
         }
     }
     
+    // Stage 7: Send success/failure notification
     post {
+        always {
+            echo 'Pipeline execution finished.'
+        }
         success {
-            echo 'Pipeline completed successfully!'
+            echo 'Pipeline succeeded! Sending notifications...'
+            // Example Email Notification:
+            // mail to: "${NOTIFICATION_EMAIL}",
+            //      subject: "SUCCESS: Jenkins Pipeline ${currentBuild.fullDisplayName}",
+            //      body: "Good news! The portfolio was successfully deployed to S3 and CloudFront cache was invalidated. Build URL: ${env.BUILD_URL}"
+            
+            // Example Slack Notification (Requires Slack Notification Plugin):
+            // slackSend color: 'good', message: "🚀 SUCCESS: ${env.JOB_NAME} [${env.BUILD_NUMBER}] - Portfolio deployed. (${env.BUILD_URL})"
         }
         failure {
-            echo 'Pipeline failed. Check the logs.'
+            echo 'Pipeline failed! Sending notifications...'
+            // Example Email Notification:
+            // mail to: "${NOTIFICATION_EMAIL}",
+            //      subject: "FAILED: Jenkins Pipeline ${currentBuild.fullDisplayName}",
+            //      body: "Pipeline failed during deployment. Please check the logs here: ${env.BUILD_URL}"
+            
+            // Example Slack Notification:
+            // slackSend color: 'danger', message: "❌ FAILED: ${env.JOB_NAME} [${env.BUILD_NUMBER}] - Deployment failed. Please review logs: ${env.BUILD_URL}"
         }
     }
 }

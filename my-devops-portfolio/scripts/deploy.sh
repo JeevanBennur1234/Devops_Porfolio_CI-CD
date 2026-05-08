@@ -1,24 +1,45 @@
 #!/bin/bash
+# scripts/deploy.sh
+# Script to sync the build output to an AWS S3 bucket.
 
-# Deployment script for AWS S3
-# Ensure AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, and S3_BUCKET are set in the environment
+# Exit immediately if a command exits with a non-zero status
+set -e
 
-if [ -z "$S3_BUCKET" ]; then
-  echo "Error: S3_BUCKET environment variable is not set."
+# Validation
+if [ -z "$S3_BUCKET_NAME" ]; then
+  echo "❌ ERROR: S3_BUCKET_NAME environment variable is not set."
   exit 1
 fi
 
-echo "Starting deployment to S3 bucket: $S3_BUCKET"
+if [ ! -d "dist" ]; then
+  echo "❌ ERROR: 'dist' directory not found. Did the build stage fail?"
+  exit 1
+fi
 
-# Sync the dist folder to S3, deleting extra files and setting the correct ACL/Cache-Control if needed
-# Note: --delete ensures files removed from the build are removed from S3
-aws s3 sync dist/ s3://$S3_BUCKET/ \
+echo "🚀 Starting deployment to S3 bucket: s3://${S3_BUCKET_NAME}"
+
+# 1. Sync all assets EXCEPT index.html (with aggressive caching)
+# --delete removes files from S3 that no longer exist in the local dist/ folder
+echo "📦 Syncing static assets (with caching headers)..."
+aws s3 sync dist/ s3://${S3_BUCKET_NAME}/ \
   --delete \
-  --cache-control "max-age=31536000,public" \
-  --exclude "index.html"
+  --exclude "index.html" \
+  --cache-control "max-age=31536000, public, immutable"
 
-# Upload index.html separately with no caching so updates are seen immediately
-aws s3 cp dist/index.html s3://$S3_BUCKET/index.html \
-  --cache-control "no-cache, no-store, must-revalidate"
+if [ $? -ne 0 ]; then
+    echo "❌ ERROR: Failed to sync static assets to S3."
+    exit 1
+fi
 
-echo "S3 Deployment completed."
+# 2. Upload index.html separately (with NO caching to ensure instant updates)
+echo "📄 Uploading index.html (with no-cache headers)..."
+aws s3 cp dist/index.html s3://${S3_BUCKET_NAME}/index.html \
+  --cache-control "no-cache, no-store, must-revalidate" \
+  --content-type "text/html"
+
+if [ $? -ne 0 ]; then
+    echo "❌ ERROR: Failed to upload index.html to S3."
+    exit 1
+fi
+
+echo "✅ S3 Deployment completed successfully."

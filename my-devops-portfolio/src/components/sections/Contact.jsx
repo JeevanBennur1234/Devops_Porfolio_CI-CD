@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Send, Loader2 } from 'lucide-react';
 import { portfolioContent } from '../../data/content';
+import emailjs from '@emailjs/browser';
 
 export default function Contact() {
   const { contact } = portfolioContent;
@@ -12,38 +13,28 @@ export default function Contact() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const formRef = useRef();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus('submitting');
 
-    // Here you would integrate Formspree or EmailJS
-    // Example Formspree endpoint (replace with your actual endpoint via env var)
-    const formEndpoint = import.meta.env.VITE_FORMSPREE_ENDPOINT || '';
+    const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+    const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+    const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
 
-    if (!formEndpoint) {
-      console.warn("No form endpoint configured. Simulating successful submission.");
+    if (!serviceId || !templateId || !publicKey) {
+      console.warn("EmailJS environment variables are missing. Simulating success.");
       setTimeout(() => setStatus('success'), 1500);
       return;
     }
 
     try {
-      const response = await fetch(formEndpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify(formData)
-      });
-
-      if (response.ok) {
-        setStatus('success');
-        setFormData({ name: '', email: '', message: '' });
-      } else {
-        setStatus('error');
-      }
+      await emailjs.sendForm(serviceId, templateId, formRef.current, publicKey);
+      setStatus('success');
+      setFormData({ name: '', email: '', message: '' });
     } catch (error) {
-      console.error(error);
+      console.error('FAILED...', error.text);
       setStatus('error');
     }
   };
@@ -83,7 +74,7 @@ export default function Contact() {
               </button>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
