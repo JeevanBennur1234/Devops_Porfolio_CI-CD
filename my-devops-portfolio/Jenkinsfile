@@ -1,0 +1,63 @@
+pipeline {
+    agent any
+    
+    environment {
+        // Defines the Node.js version to use (if using NodeJS plugin in Jenkins)
+        // Alternatively, use a Docker agent with Node pre-installed
+        NODE_ENV = 'production'
+        
+        // AWS configuration (ensure credentials are set in Jenkins)
+        AWS_REGION = 'us-east-1'
+        S3_BUCKET = 'your-portfolio-bucket-name'
+        CLOUDFRONT_DIST_ID = 'YOUR_CLOUDFRONT_DISTRIBUTION_ID'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh 'npm ci'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                // Ensure environment variables needed for build are passed here
+                // e.g. withCredentials or explicitly exporting
+                sh 'npm run build'
+            }
+        }
+
+        stage('Deploy to S3') {
+            steps {
+                withCredentials([aws(credentialsId: 'aws-credentials-id', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                    sh 'chmod +x scripts/deploy.sh'
+                    sh './scripts/deploy.sh'
+                }
+            }
+        }
+
+        stage('Invalidate CloudFront Cache') {
+            steps {
+                withCredentials([aws(credentialsId: 'aws-credentials-id', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                    sh 'chmod +x scripts/invalidate.sh'
+                    sh './scripts/invalidate.sh'
+                }
+            }
+        }
+    }
+    
+    post {
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed. Check the logs.'
+        }
+    }
+}
