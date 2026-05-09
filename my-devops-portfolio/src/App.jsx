@@ -12,6 +12,7 @@ import BlogPlaceholder from './components/sections/BlogPlaceholder';
 
 function App() {
   return (
+    // Main UI Wrapper
     <div className="min-h-screen bg-light-bg dark:bg-dark-bg text-slate-900 dark:text-slate-100 transition-colors duration-300">
       <Navbar />
       <main>
