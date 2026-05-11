@@ -1,63 +1,185 @@
-# DevOps Engineer Portfolio
+# DevOps Portfolio — CI/CD Pipeline Project
 
-A modern, responsive, and fully customizable personal portfolio website tailored for DevOps Engineers and Cloud Professionals. Built with React (Vite), Tailwind CSS, and Framer Motion.
+A complete, production-ready DevOps portfolio website demonstrating a full CI/CD pipeline using modern DevOps tools and best practices.
 
-## Features
+## 🏗️ Architecture Overview
 
-- 🌓 **Dark/Light Mode**: First-class support for theming with automatic system preference detection.
-- 📱 **Mobile-First Design**: Fully responsive layout that looks great on all devices.
-- ✨ **Smooth Animations**: Engaging enter/scroll animations powered by Framer Motion.
-- 🧩 **Component-Based**: Clean and modular architecture making it easy to extend.
-- 📄 **Data-Driven**: All portfolio content (skills, projects, experience) is centralized in `src/data/content.js` for easy updates without touching UI code.
-- ✉️ **Contact Form**: Pre-configured structure ready for integration with Formspree or EmailJS.
+```
+Developer → GitHub → Jenkins → Docker Build → AWS S3 → CloudFront → Users
+                                    ↓
+                              Ansible (Server Config)
+```
 
-## Prerequisites
+> For a detailed architecture diagram, see [ARCHITECTURE.md](ARCHITECTURE.md)
 
-- Node.js (v16 or higher recommended)
-- npm or yarn
+## 🛠️ Tech Stack
 
-## Setup Instructions
+### Application
+| Technology | Purpose |
+|-----------|---------|
+| React.js (Vite) | Frontend framework |
+| Tailwind CSS | Utility-first CSS styling |
+| Framer Motion | Animations and transitions |
+| EmailJS | Contact form integration |
 
-1. **Install Dependencies**
-   ```bash
-   npm install
-   ```
+### DevOps Tools
+| Tool | Purpose |
+|------|---------|
+| **GitHub** | Source code management, version control |
+| **Jenkins** | CI/CD pipeline automation |
+| **Docker** | Containerization (multi-stage build) |
+| **AWS S3** | Static website hosting |
+| **AWS CloudFront** | CDN with HTTPS |
+| **AWS IAM** | Secure deployment credentials |
+| **Ansible** | Server provisioning & configuration |
 
-2. **Configure Contact Form (Optional but recommended)**
-   To make the contact form functional, you'll need a backend service to send emails. [Formspree](https://formspree.io/) is recommended for its simplicity.
-   - Create a Formspree account and a new form.
-   - Create a `.env` file in the root of the project:
-     ```env
-     VITE_FORMSPREE_ENDPOINT=https://formspree.io/f/your_endpoint_id
-     ```
+## 📁 Project Structure
 
-3. **Update Your Content**
-   Open `src/data/content.js` and replace the placeholder data with your actual skills, projects, experience, and contact links.
+```
+my-devops-portfolio/
+├── ansible/                    # Ansible configuration management
+│   ├── inventory.ini           # Target server definitions
+│   ├── setup-server.yml        # Server provisioning playbook
+│   └── deploy.yml              # Application deployment playbook
+├── scripts/                    # Deployment automation scripts
+│   ├── deploy.sh               # S3 deployment script
+│   └── cloudfront-invalidate.sh # CloudFront cache invalidation
+├── src/                        # React application source code
+│   ├── components/             # React components
+│   │   ├── layout/             # Navbar, Footer
+│   │   └── sections/           # Hero, About, Skills, Projects, etc.
+│   ├── data/                   # Content data layer
+│   ├── hooks/                  # Custom React hooks
+│   └── index.css               # Global styles
+├── Dockerfile                  # Multi-stage Docker build
+├── docker-compose.yml          # Docker Compose configuration
+├── nginx.conf                  # Nginx SPA configuration
+├── .dockerignore               # Docker build exclusions
+├── Jenkinsfile                 # Jenkins CI/CD pipeline definition
+├── .env.example                # Environment variables template
+├── ARCHITECTURE.md             # Architecture diagrams & tool integration
+├── WORKFLOW.md                 # Detailed CI/CD workflow documentation
+├── AWS-DEPLOYMENT.md           # AWS setup guide, security & cost analysis
+└── README.md                   # This file
+```
 
-4. **Start Development Server**
-   ```bash
-   npm run dev
-   ```
-   The application will be available at `http://localhost:5173`.
+## 🚀 Quick Start
 
-5. **Build for Production**
-   ```bash
-   npm run build
-   ```
-   The optimized production build will be output to the `dist` folder.
+### Local Development
+```bash
+# Clone the repository
+git clone https://github.com/JeevanBennur1234/devops-portfolio-cicd.git
+cd devops-portfolio-cicd
 
-## Project Structure
+# Install dependencies
+npm install
 
-- `src/components/layout/`: Navigation bar, Footer, and structural components.
-- `src/components/sections/`: Individual page sections (Hero, About, Projects, etc.).
-- `src/data/content.js`: The central store for all your portfolio text data.
-- `src/hooks/useTheme.jsx`: Custom hook managing dark/light mode logic.
-- `tailwind.config.js`: Custom theme configuration (colors, fonts).
+# Start development server
+npm run dev
 
-## Tech Stack
+# Open in browser: http://localhost:5173
+```
 
-- **Framework**: React.js via Vite
-- **Styling**: Tailwind CSS
-- **Animations**: Framer Motion
-- **Icons**: Lucide React
-- **Scrolling**: react-scroll
+### Docker (Containerized)
+```bash
+# Build and run with Docker Compose
+docker compose up -d --build
+
+# Or build manually
+docker build -t devops-portfolio .
+docker run -d -p 80:80 --name portfolio devops-portfolio
+
+# Open in browser: http://localhost
+```
+
+### Production Build
+```bash
+# Create optimized production build
+npm run build
+
+# Preview production build locally
+npm run preview
+```
+
+## 📋 CI/CD Pipeline Stages
+
+The Jenkins pipeline (`Jenkinsfile`) automates the following stages:
+
+| Stage | Description | Tool |
+|-------|-------------|------|
+| 1. Checkout Code | Clone latest code from GitHub | Git |
+| 2. Install Dependencies | Run `npm ci` for deterministic installs | Node.js |
+| 3. Run Tests | Code quality checks with ESLint | ESLint |
+| 4. Build React App | Create optimized production bundle | Vite |
+| 5. Docker Build | Build multi-stage Docker image | Docker |
+| 6. Deploy to S3 | Sync files to AWS S3 bucket | AWS CLI |
+| 7. CloudFront Invalidation | Clear CDN cache | AWS CLI |
+| 8. Notifications | Email/Slack success/failure alerts | Jenkins |
+
+## 🐳 Docker Setup
+
+### Multi-Stage Build
+- **Stage 1** (`node:20-alpine`): Installs dependencies and builds the React app
+- **Stage 2** (`nginx:1.27-alpine`): Serves static files with optimized Nginx config
+- **Result**: ~25MB production image with security headers and gzip compression
+
+### Docker Commands
+```bash
+docker compose up -d --build    # Build and start
+docker compose down             # Stop
+docker compose logs -f          # View logs
+docker ps                       # Check running containers
+```
+
+## ☁️ AWS Deployment
+
+See [AWS-DEPLOYMENT.md](AWS-DEPLOYMENT.md) for the complete guide including:
+- Service selection rationale (S3, CloudFront, IAM)
+- Security configuration (IAM policies, bucket policies)
+- Cost analysis (~$0/month on Free Tier)
+- Step-by-step setup instructions
+
+## 📦 Ansible Configuration
+
+See the `ansible/` directory for server provisioning:
+```bash
+# Provision a fresh server
+ansible-playbook -i ansible/inventory.ini ansible/setup-server.yml
+
+# Deploy the application
+ansible-playbook -i ansible/inventory.ini ansible/deploy.yml
+```
+
+## 🔀 Git Branching Strategy
+
+- `main` — Production-ready code
+- `feature/*` — Feature development branches
+- Branches are preserved after merging for audit trail
+
+## 📖 Documentation
+
+| Document | Description |
+|----------|-------------|
+| [ARCHITECTURE.md](ARCHITECTURE.md) | System architecture diagrams and tool integration |
+| [WORKFLOW.md](WORKFLOW.md) | Detailed CI/CD workflow and tool explanations |
+| [AWS-DEPLOYMENT.md](AWS-DEPLOYMENT.md) | AWS setup, security, and cost analysis |
+
+## 📝 Environment Variables
+
+Copy `.env.example` to `.env` and configure:
+```bash
+cp .env.example .env
+```
+
+| Variable | Description |
+|----------|-------------|
+| `VITE_EMAILJS_SERVICE_ID` | EmailJS service ID |
+| `VITE_EMAILJS_TEMPLATE_ID` | EmailJS template ID |
+| `VITE_EMAILJS_PUBLIC_KEY` | EmailJS public key |
+
+## 👤 Author
+
+**Jeevan Bennur**  
+DevOps Engineer | Cloud Enthusiast
+
+- GitHub: [@JeevanBennur1234](https://github.com/JeevanBennur1234)
