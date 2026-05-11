@@ -7,8 +7,8 @@ pipeline {
     }
     
     environment {
-        // Node Environment
-        NODE_ENV = 'production'
+        // NOTE: NODE_ENV is NOT set globally because it causes npm ci to skip devDependencies (Vite, ESLint)
+        // NODE_ENV is set to 'production' only during the build step
         
         // AWS Configuration
         AWS_DEFAULT_REGION = 'us-east-1'
@@ -76,7 +76,7 @@ pipeline {
             steps {
                 dir('my-devops-portfolio') {
                     echo '🏗️ Building the production bundle...'
-                    sh 'npm run build'
+                    sh 'NODE_ENV=production npm run build'
                     sh 'ls -la dist/'
                     echo '✅ Build completed successfully!'
                 }
