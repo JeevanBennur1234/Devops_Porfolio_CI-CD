@@ -1,0 +1,37 @@
+# Dependencies - will be installed fresh inside the container
+node_modules
+
+# Build output - will be generated inside the container
+dist
+
+# Git files - not needed in the image
+.git
+.gitignore
+
+# Environment files - should not be baked into images
+.env
+.env.local
+.env.production
+
+# IDE and editor files
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation files - not needed in production image
+*.md
+LICENSE
+
+# CI/CD files - not needed in the image
+Jenkinsfile
+ansible/
+
+# Docker files - avoid recursive copy
+Dockerfile
+docker-compose.yml
+.dockerignore

@@ -1,0 +1,215 @@
+---
+# ============================================================
+# Ansible Playbook: Server Setup
+# ============================================================
+# Purpose: Provision a fresh Ubuntu EC2 instance with all
+#          required software for hosting the DevOps Portfolio
+#
+# Usage:
+#   ansible-playbook -i inventory.ini setup-server.yml
+#
+# Prerequisites:
+#   - Ubuntu 22.04+ EC2 instance running
+#   - SSH key configured for access
+#   - Ansible installed on control machine
+# ============================================================
+
+- name: Setup Web Server for DevOps Portfolio
+  hosts: webservers
+  become: yes
+  
+  vars:
+    nodejs_version: "20"
+    docker_compose_version: "2.24.0"
+
+  tasks:
+    # ========================================================
+    # System Updates
+    # ========================================================
+    - name: Update apt package cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+      tags: [system]
+
+    - name: Upgrade all system packages
+      apt:
+        upgrade: dist
+        autoremove: yes
+      tags: [system]
+
+    # ========================================================
+    # Install Essential Packages
+    # ========================================================
+    - name: Install required system packages
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+          - software-properties-common
+          - git
+          - ufw
+          - htop
+          - unzip
+        state: present
+      tags: [packages]
+
+    # ========================================================
+    # Install Docker
+    # ========================================================
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+      tags: [docker]
+
+    - name: Add Docker repository
+      apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+        state: present
+      tags: [docker]
+
+    - name: Install Docker Engine
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+        update_cache: yes
+      tags: [docker]
+
+    - name: Start and enable Docker service
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+      tags: [docker]
+
+    - name: Add current user to docker group
+      user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: yes
+      tags: [docker]
+
+    # ========================================================
+    # Install Node.js (for building the app on the server)
+    # ========================================================
+    - name: Add NodeSource GPG key
+      apt_key:
+        url: "https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key"
+        state: present
+      tags: [nodejs]
+
+    - name: Add NodeSource repository
+      apt_repository:
+        repo: "deb https://deb.nodesource.com/node_{{ nodejs_version }}.x nodistro main"
+        state: present
+      tags: [nodejs]
+
+    - name: Install Node.js
+      apt:
+        name: nodejs
+        state: present
+        update_cache: yes
+      tags: [nodejs]
+
+    - name: Verify Node.js installation
+      command: node --version
+      register: node_version
+      changed_when: false
+      tags: [nodejs]
+
+    - name: Display Node.js version
+      debug:
+        msg: "Node.js version: {{ node_version.stdout }}"
+      tags: [nodejs]
+
+    # ========================================================
+    # Install Nginx (reverse proxy)
+    # ========================================================
+    - name: Install Nginx
+      apt:
+        name: nginx
+        state: present
+      tags: [nginx]
+
+    - name: Start and enable Nginx
+      systemd:
+        name: nginx
+        state: started
+        enabled: yes
+      tags: [nginx]
+
+    # ========================================================
+    # Configure Firewall (UFW)
+    # ========================================================
+    - name: Allow SSH through firewall
+      ufw:
+        rule: allow
+        port: "22"
+        proto: tcp
+      tags: [firewall]
+
+    - name: Allow HTTP through firewall
+      ufw:
+        rule: allow
+        port: "80"
+        proto: tcp
+      tags: [firewall]
+
+    - name: Allow HTTPS through firewall
+      ufw:
+        rule: allow
+        port: "443"
+        proto: tcp
+      tags: [firewall]
+
+    - name: Enable UFW firewall
+      ufw:
+        state: enabled
+        policy: deny
+      tags: [firewall]
+
+    # ========================================================
+    # Create Application Directory
+    # ========================================================
+    - name: Create application directory
+      file:
+        path: /opt/devops-portfolio
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: "0755"
+      tags: [app]
+
+    # ========================================================
+    # Final Verification
+    # ========================================================
+    - name: Verify Docker installation
+      command: docker --version
+      register: docker_version
+      changed_when: false
+      tags: [verify]
+
+    - name: Verify Docker Compose installation
+      command: docker compose version
+      register: compose_version
+      changed_when: false
+      tags: [verify]
+
+    - name: Display installation summary
+      debug:
+        msg: |
+          ✅ Server setup complete!
+          Docker: {{ docker_version.stdout }}
+          Docker Compose: {{ compose_version.stdout }}
+          Node.js: {{ node_version.stdout }}
+          Firewall: Enabled (SSH, HTTP, HTTPS allowed)
+      tags: [verify]

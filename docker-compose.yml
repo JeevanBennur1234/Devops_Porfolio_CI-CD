@@ -1,0 +1,48 @@
+# Docker Compose configuration for DevOps Portfolio
+# Usage:
+#   Development:  docker compose up --build
+#   Background:   docker compose up -d --build
+#   Stop:         docker compose down
+#   View logs:    docker compose logs -f
+
+version: '3.8'
+
+services:
+  # ============================================================
+  # Portfolio Web Application
+  # ============================================================
+  portfolio:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: devops-portfolio
+    ports:
+      - "80:80"          # Map host port 80 to container port 80
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+  # ============================================================
+  # Jenkins CI/CD Server (Optional - for local pipeline testing)
+  # ============================================================
+  # Uncomment the section below to run Jenkins alongside the portfolio
+  # jenkins:
+  #   image: jenkins/jenkins:lts
+  #   container_name: jenkins-server
+  #   ports:
+  #     - "8080:8080"      # Jenkins Web UI
+  #     - "50000:50000"    # Jenkins Agent port
+  #   volumes:
+  #     - jenkins_data:/var/jenkins_home
+  #     - /var/run/docker.sock:/var/run/docker.sock  # Allow Jenkins to use Docker
+  #   restart: unless-stopped
+
+# volumes:
+#   jenkins_data:
+#     driver: local
