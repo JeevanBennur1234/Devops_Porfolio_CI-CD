@@ -1,5 +1,10 @@
 pipeline {
     agent any
+
+    // Use the NodeJS tool configured in Jenkins Global Tool Configuration
+    tools {
+        nodejs 'NodeJS'
+    }
     
     environment {
         // Node Environment
@@ -46,12 +51,17 @@ pipeline {
         // ==============================================================
         stage('2. Install Dependencies') {
             steps {
-                echo '📦 Installing npm dependencies...'
-                // npm ci is preferred over npm install for CI/CD because:
-                // - It's faster (skips dependency resolution)
-                // - It uses exact versions from package-lock.json
-                // - It fails if package-lock.json is out of sync
-                sh 'npm ci --silent'
+                // Navigate into the project subdirectory
+                dir('my-devops-portfolio') {
+                    echo '📦 Installing npm dependencies...'
+                    // npm ci is preferred over npm install for CI/CD because:
+                    // - It's faster (skips dependency resolution)
+                    // - It uses exact versions from package-lock.json
+                    // - It fails if package-lock.json is out of sync
+                    sh 'node --version'
+                    sh 'npm --version'
+                    sh 'npm ci --silent'
+                }
             }
         }
 
@@ -60,10 +70,12 @@ pipeline {
         // ==============================================================
         stage('3. Run Tests') {
             steps {
-                echo '🧪 Running code quality checks...'
-                // Run ESLint for code quality
-                sh 'npm run lint'
-                // If you add unit tests later, add: sh 'npm test'
+                dir('my-devops-portfolio') {
+                    echo '🧪 Running code quality checks...'
+                    // Run ESLint for code quality
+                    sh 'npm run lint'
+                    // If you add unit tests later, add: sh 'npm test'
+                }
             }
         }
 
@@ -72,81 +84,88 @@ pipeline {
         // ==============================================================
         stage('4. Build React App') {
             steps {
-                echo '🏗️ Building the production bundle...'
-                // Vite builds optimized static files into dist/
-                // Includes: minification, tree-shaking, code-splitting
-                sh 'npm run build'
-                
-                // Verify build output exists
-                sh 'ls -la dist/'
-                echo '✅ Build completed successfully!'
-            }
-        }
-
-        // ==============================================================
-        // Stage 5: Build Docker Image
-        // ==============================================================
-        stage('5. Docker Build') {
-            steps {
-                echo '🐳 Building Docker image...'
-                // Build multi-stage Docker image
-                // Stage 1: Node.js builds the React app
-                // Stage 2: Nginx serves the static files
-                sh "docker build -t ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} ."
-                sh "docker tag ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} ${DOCKER_IMAGE_NAME}:latest"
-                echo "✅ Docker image built: ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
-            }
-        }
-
-        // ==============================================================
-        // Stage 6: Deploy to AWS S3
-        // ==============================================================
-        stage('6. Deploy to AWS S3') {
-            steps {
-                echo '☁️ Deploying static files to AWS S3...'
-                // Securely inject AWS credentials from Jenkins Credentials Store
-                withCredentials([aws(credentialsId: 'aws-portfolio-credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-                    sh 'chmod +x scripts/deploy.sh'
-                    sh './scripts/deploy.sh'
+                dir('my-devops-portfolio') {
+                    echo '🏗️ Building the production bundle...'
+                    // Vite builds optimized static files into dist/
+                    // Includes: minification, tree-shaking, code-splitting
+                    sh 'npm run build'
+                    
+                    // Verify build output exists
+                    sh 'ls -la dist/'
+                    echo '✅ Build completed successfully!'
                 }
-                echo '✅ Files deployed to S3 successfully!'
             }
         }
 
         // ==============================================================
-        // Stage 7: Invalidate CloudFront CDN Cache
+        // Stage 5: Build Docker Image (Optional - requires Docker-in-Docker)
         // ==============================================================
-        stage('7. Invalidate CloudFront Cache') {
-            steps {
-                echo '🔄 Invalidating CloudFront edge caches...'
-                withCredentials([aws(credentialsId: 'aws-portfolio-credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-                    sh 'chmod +x scripts/cloudfront-invalidate.sh'
-                    sh './scripts/cloudfront-invalidate.sh'
-                }
-                echo '✅ CloudFront cache invalidated!'
-            }
-        }
+        // NOTE: This stage requires Docker to be available inside Jenkins.
+        // If running Jenkins in Docker, you need to mount the Docker socket.
+        // Uncomment when Docker is configured in Jenkins.
+        // stage('5. Docker Build') {
+        //     steps {
+        //         dir('my-devops-portfolio') {
+        //             echo '🐳 Building Docker image...'
+        //             sh "docker build -t ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} ."
+        //             sh "docker tag ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} ${DOCKER_IMAGE_NAME}:latest"
+        //             echo "✅ Docker image built: ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
+        //         }
+        //     }
+        // }
+
+        // ==============================================================
+        // Stage 5: Deploy to AWS S3 (Requires AWS credentials in Jenkins)
+        // ==============================================================
+        // NOTE: Uncomment when AWS credentials are configured in Jenkins.
+        // stage('5. Deploy to AWS S3') {
+        //     steps {
+        //         dir('my-devops-portfolio') {
+        //             echo '☁️ Deploying static files to AWS S3...'
+        //             withCredentials([aws(credentialsId: 'aws-portfolio-credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+        //                 sh 'chmod +x scripts/deploy.sh'
+        //                 sh './scripts/deploy.sh'
+        //             }
+        //             echo '✅ Files deployed to S3 successfully!'
+        //         }
+        //     }
+        // }
+
+        // ==============================================================
+        // Stage 6: Invalidate CloudFront CDN Cache
+        // ==============================================================
+        // NOTE: Uncomment when AWS credentials are configured in Jenkins.
+        // stage('6. Invalidate CloudFront Cache') {
+        //     steps {
+        //         dir('my-devops-portfolio') {
+        //             echo '🔄 Invalidating CloudFront edge caches...'
+        //             withCredentials([aws(credentialsId: 'aws-portfolio-credentials', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+        //                 sh 'chmod +x scripts/cloudfront-invalidate.sh'
+        //                 sh './scripts/cloudfront-invalidate.sh'
+        //             }
+        //             echo '✅ CloudFront cache invalidated!'
+        //         }
+        //     }
+        // }
     }
     
     // ==============================================================
-    // Stage 8: Post-Build Actions (Notifications)
+    // Post-Build Actions (Notifications)
     // ==============================================================
     post {
         always {
             echo '🏁 Pipeline execution finished.'
-            // Clean up Docker images to save space
-            sh "docker rmi ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} || true"
         }
         success {
-            echo '✅ Pipeline succeeded! Deployment complete.'
+            echo '✅ Pipeline succeeded! Build complete.'
             // Uncomment to enable Email notifications:
             // mail to: "${NOTIFICATION_EMAIL}",
             //      subject: "✅ SUCCESS: ${currentBuild.fullDisplayName}",
-            //      body: "Portfolio deployed successfully!\nBuild: ${env.BUILD_URL}"
+            //      body: "Portfolio built successfully!\nBuild: ${env.BUILD_URL}"
             
             // Uncomment to enable Slack notifications (requires Slack Plugin):
             // slackSend color: 'good',
-            //     message: "🚀 SUCCESS: ${env.JOB_NAME} [#${env.BUILD_NUMBER}] deployed! (${env.BUILD_URL})"
+            //     message: "🚀 SUCCESS: ${env.JOB_NAME} [#${env.BUILD_NUMBER}] built! (${env.BUILD_URL})"
         }
         failure {
             echo '❌ Pipeline failed! Check the logs for details.'
