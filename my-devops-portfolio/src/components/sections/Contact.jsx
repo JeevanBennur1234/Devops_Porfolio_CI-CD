@@ -1,11 +1,9 @@
-import React, { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Send, Loader2 } from 'lucide-react';
-import { portfolioContent } from '../../data/content';
 import emailjs from '@emailjs/browser';
 
 export default function Contact() {
-  const { contact } = portfolioContent;
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [status, setStatus] = useState('idle'); // idle, submitting, success, error
 
