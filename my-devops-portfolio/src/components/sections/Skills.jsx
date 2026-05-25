@@ -1,36 +1,63 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 import { portfolioContent } from '../../data/content';
-import { 
+import {
   FaAws, FaDocker, FaJenkins, FaGitAlt, FaLinux, FaCloud
 } from 'react-icons/fa';
-import { 
-  SiKubernetes, SiTerraform, SiPrometheus, SiAnsible, SiGithubactions, 
-  SiGooglecloud, SiHelm, SiGitlab, SiGrafana, 
+import {
+  SiKubernetes, SiTerraform, SiPrometheus, SiAnsible, SiGithubactions,
+  SiGooglecloud, SiHelm, SiGitlab, SiGrafana,
   SiPython, SiGnubash, SiGo, SiNodedotjs
 } from 'react-icons/si';
 
 const iconMap = {
-  "AWS": <FaAws className="w-8 h-8 text-[#FF9900]" />,
-  "GCP": <SiGooglecloud className="w-8 h-8 text-[#4285F4]" />,
-  "Azure": <FaCloud className="w-8 h-8 text-[#0089D6]" />,
-  "Linux": <FaLinux className="w-8 h-8 text-slate-800 dark:text-white" />,
-  "Docker": <FaDocker className="w-8 h-8 text-[#2496ED]" />,
-  "Kubernetes": <SiKubernetes className="w-8 h-8 text-[#326CE5]" />,
-  "Helm": <SiHelm className="w-8 h-8 text-[#0F1689]" />,
-  "Jenkins": <FaJenkins className="w-8 h-8 text-[#D24939]" />,
-  "GitHub Actions": <SiGithubactions className="w-8 h-8 text-[#2088FF]" />,
-  "GitLab CI": <SiGitlab className="w-8 h-8 text-[#FCA121]" />,
-  "Terraform": <SiTerraform className="w-8 h-8 text-[#7B42BC]" />,
-  "Ansible": <SiAnsible className="w-8 h-8 text-[#EE0000]" />,
-  "Prometheus": <SiPrometheus className="w-8 h-8 text-[#E6522C]" />,
-  "Grafana": <SiGrafana className="w-8 h-8 text-[#F46800]" />,
-  "Python": <SiPython className="w-8 h-8 text-[#3776AB]" />,
-  "Bash": <SiGnubash className="w-8 h-8 text-[#4EAA25]" />,
-  "Go": <SiGo className="w-8 h-8 text-[#00ADD8]" />,
-  "Node.js": <SiNodedotjs className="w-8 h-8 text-[#339933]" />,
-  "Git": <FaGitAlt className="w-8 h-8 text-[#F05032]" />
+  "AWS": <FaAws className="w-7 h-7 text-[#FF9900]" />,
+  "GCP": <SiGooglecloud className="w-7 h-7 text-[#4285F4]" />,
+  "Azure": <FaCloud className="w-7 h-7 text-[#0089D6]" />,
+  "Linux": <FaLinux className="w-7 h-7 text-slate-800 dark:text-white" />,
+  "Docker": <FaDocker className="w-7 h-7 text-[#2496ED]" />,
+  "Kubernetes": <SiKubernetes className="w-7 h-7 text-[#326CE5]" />,
+  "Helm": <SiHelm className="w-7 h-7 text-[#0F1689]" />,
+  "Jenkins": <FaJenkins className="w-7 h-7 text-[#D24939]" />,
+  "GitHub Actions": <SiGithubactions className="w-7 h-7 text-[#2088FF]" />,
+  "GitLab CI": <SiGitlab className="w-7 h-7 text-[#FCA121]" />,
+  "Terraform": <SiTerraform className="w-7 h-7 text-[#7B42BC]" />,
+  "Ansible": <SiAnsible className="w-7 h-7 text-[#EE0000]" />,
+  "Prometheus": <SiPrometheus className="w-7 h-7 text-[#E6522C]" />,
+  "Grafana": <SiGrafana className="w-7 h-7 text-[#F46800]" />,
+  "Python": <SiPython className="w-7 h-7 text-[#3776AB]" />,
+  "Bash": <SiGnubash className="w-7 h-7 text-[#4EAA25]" />,
+  "Go": <SiGo className="w-7 h-7 text-[#00ADD8]" />,
+  "Node.js": <SiNodedotjs className="w-7 h-7 text-[#339933]" />,
+  "Git": <FaGitAlt className="w-7 h-7 text-[#F05032]" />
 };
+
+function SkillItem({ name, level }) {
+  const hasLevel = typeof level === 'number';
+  return (
+    <div className="flex flex-col gap-2 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
+      <div className="flex items-center gap-3">
+        <div className="group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
+          {iconMap[name] || <FaLinux className="w-7 h-7 text-slate-400" />}
+        </div>
+        <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex-1">{name}</span>
+        {hasLevel && (
+          <span className="text-xs font-mono text-slate-400 dark:text-slate-500">{level}%</span>
+        )}
+      </div>
+      {hasLevel && (
+        <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+          <motion.div
+            initial={{ width: 0 }}
+            whileInView={{ width: `${level}%` }}
+            viewport={{ once: true }}
+            transition={{ duration: 1, ease: 'easeOut', delay: 0.2 }}
+            className="h-full bg-gradient-to-r from-primary-500 to-primary-400 rounded-full"
+          />
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function Skills() {
   const { skills } = portfolioContent;
@@ -75,20 +102,16 @@ export default function Skills() {
               variants={itemVariants}
               className="bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border rounded-2xl p-8 shadow-sm hover:shadow-xl transition-shadow duration-300"
             >
-              <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-6 border-b border-slate-100 dark:border-slate-800 pb-4">
+              <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-6 border-b border-slate-100 dark:border-slate-800 pb-4">
                 {skillGroup.category}
               </h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
-                {skillGroup.items.map((item, i) => (
-                  <div key={i} className="flex flex-col items-center justify-center gap-3 p-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
-                    <div className="group-hover:scale-110 transition-transform duration-300">
-                      {iconMap[item] || <FaLinux className="w-8 h-8 text-slate-400" />}
-                    </div>
-                    <span className="text-sm font-semibold text-slate-600 dark:text-slate-300 text-center">
-                      {item}
-                    </span>
-                  </div>
-                ))}
+              <div className="grid grid-cols-1 gap-1">
+                {skillGroup.items.map((item, i) => {
+                  if (typeof item === 'string') {
+                    return <SkillItem key={i} name={item} />;
+                  }
+                  return <SkillItem key={i} name={item.name} level={item.level} />;
+                })}
               </div>
             </motion.div>
           ))}

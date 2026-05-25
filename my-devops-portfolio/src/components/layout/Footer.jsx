@@ -1,4 +1,3 @@
-import React from 'react';
 import { portfolioContent } from '../../data/content';
 import { Code2, Briefcase, MessageCircle, Mail } from 'lucide-react';
 
