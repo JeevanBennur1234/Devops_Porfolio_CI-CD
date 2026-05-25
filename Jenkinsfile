@@ -92,6 +92,23 @@ docker build -t devops-portfolio:${BUILD_NUMBER} .
                 }
             }
         }
+
+        // ==============================================================
+        // Stage 6: Deploy
+        // ==============================================================
+        stage('6. Deploy') {
+            steps {
+                sh '''
+docker stop portfolio || true
+docker rm portfolio || true
+
+docker run -d \
+    --name portfolio \
+    -p 80:80 \
+    devops-portfolio:${BUILD_NUMBER}
+'''
+            }
+        }
     }
     
     // ==============================================================
