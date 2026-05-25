@@ -69,7 +69,7 @@ npm install
         // ==============================================================
         // Stage 4: Build Production React Application
         // ==============================================================
-        stage('4. Build React App') {
+        stage('4. Build React Application') {
             steps {
                 dir('my-devops-portfolio') {
                     echo '🏗️ Building the production bundle...'
