@@ -94,7 +94,7 @@ docker build -t devops-portfolio:${BUILD_NUMBER} .
         }
 
         // ==============================================================
-        // Stage 6: Deploy
+        // Stage 6: Deploy (auto-deploy after successful build)
         // ==============================================================
         stage('6. Deploy') {
             steps {
