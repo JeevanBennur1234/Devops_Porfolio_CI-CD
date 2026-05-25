@@ -1,7 +1,7 @@
 export const portfolioContent = {
   hero: {
     name: "John Doe",
-    title: "DevOps Engineer | Cloud Enthusiast",
+    title: "DevOps Engineer | Cloud Enthusiast | CI/CD",
     description: "I build robust, scalable, and secure cloud infrastructure. Passionate about automating everything and optimizing CI/CD delivery pipelines.",
     resumeLink: "#", // Add your resume link here
   },
