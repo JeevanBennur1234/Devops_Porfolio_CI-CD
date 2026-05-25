@@ -96,7 +96,7 @@ docker build -t devops-portfolio:${BUILD_NUMBER} .
         // ==============================================================
         // Stage 6: Deploy
         // ==============================================================
-        stage('6. Deploy') {
+        stage('6. Deploying') {
             steps {
                 echo '🚀 Deploying application...'
 
