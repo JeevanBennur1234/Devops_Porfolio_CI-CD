@@ -94,19 +94,21 @@ docker build -t devops-portfolio:${BUILD_NUMBER} .
         }
 
         // ==============================================================
-        // Stage 6: Deploy (auto-deploy after successful build)
+        // Stage 6: Deploy
         // ==============================================================
         stage('6. Deploy') {
             steps {
-                sh '''
-docker stop portfolio || true
-docker rm portfolio || true
+                echo '🚀 Deploying application...'
 
-docker run -d \
-    --name portfolio \
-    -p 80:80 \
-    devops-portfolio:${BUILD_NUMBER}
-'''
+                sh '''
+                docker stop portfolio || true
+                docker rm portfolio || true
+
+                docker run -d \
+                --name portfolio \
+                -p 80:80 \
+                devops-portfolio:${BUILD_NUMBER}
+                '''
             }
         }
     }
