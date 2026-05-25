@@ -46,14 +46,11 @@ pipeline {
         stage('2. Install Dependencies') {
             steps {
                 dir('my-devops-portfolio') {
-                    echo '📦 Installing npm dependencies...'
                     sh '''
-                        echo "Node.js version:"
-                        node --version
-                        echo "npm version:"
-                        npm --version
-                        npm ci
-                    '''
+rm -rf node_modules
+rm -f package-lock.json
+npm install
+'''
                 }
             }
         }
