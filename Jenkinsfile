@@ -109,9 +109,24 @@ docker build -t devops-portfolio:${BUILD_NUMBER} .
         }
 
         // ==============================================================
-        // Stage 7: Deploy
+        // Stage 7: Invalidate CloudFront Cache
         // ==============================================================
-        stage('7. Deploying') {
+        stage('7. Invalidate CloudFront Cache') {
+            steps {
+                withAWS(credentials:'aws-portfolio-credentials') {
+                    sh '''
+                    aws cloudfront create-invalidation \
+                    --distribution-id E2MCM8T29VE5E7 \
+                    --paths "/*"
+                    '''
+                }
+            }
+        }
+
+        // ==============================================================
+        // Stage 8: Deploy
+        // ==============================================================
+        stage('8. Deploying') {
             steps {
                 echo '🚀 Deploying application...'
 
