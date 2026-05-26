@@ -29,7 +29,7 @@ export default function Hero() {
           transition={{ duration: 0.5, delay: 0.1 }}
         >
           <h1 className="text-5xl sm:text-7xl lg:text-8xl font-extrabold text-slate-900 dark:text-white mb-6 tracking-tight">
-            {hero.name}.
+            <span className="gradient-text">{hero.name}</span>.
           </h1>
         </motion.div>
 
@@ -66,7 +66,7 @@ export default function Hero() {
               smooth={true}
               duration={500}
               offset={-70}
-              className="cursor-pointer inline-flex items-center justify-center px-8 py-4 rounded-lg bg-primary-600 hover:bg-primary-500 text-white font-medium transition-colors shadow-lg shadow-primary-500/30 w-full sm:w-auto"
+              className="cursor-pointer inline-flex items-center justify-center px-8 py-4 rounded-xl bg-primary-600 hover:bg-primary-500 text-white font-medium transition-all duration-250 shadow-lg shadow-primary-500/30 hover:shadow-glow w-full sm:w-auto"
             >
               View Projects
               <ArrowRight className="ml-2 w-5 h-5" />
