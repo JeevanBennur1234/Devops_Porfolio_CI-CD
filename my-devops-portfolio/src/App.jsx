@@ -10,6 +10,7 @@ import Experience from './components/sections/Experience';
 import Education from './components/sections/Education';
 import Testimonials from './components/sections/Testimonials';
 import GitHubStats from './components/sections/GitHubStats';
+import Certifications from './components/sections/Certifications';
 import Blog from './components/sections/Blog';
 import Contact from './components/sections/Contact';
 import BackToTop from './components/BackToTop';
@@ -29,6 +30,7 @@ function App() {
         <Projects />
         <Experience />
         <Education />
+        <Certifications />
         <Testimonials />
         <GitHubStats />
         <Blog />
