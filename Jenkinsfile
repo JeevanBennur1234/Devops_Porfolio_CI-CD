@@ -1,21 +1,14 @@
 pipeline {
     agent any
 
-    // Use the NodeJS tool configured in Jenkins Global Tool Configuration
     tools {
         nodejs 'NodeJS-22'
     }
-    
+
     environment {
-        // NOTE: NODE_ENV is NOT set globally because it causes npm ci to skip devDependencies (Vite, ESLint)
-        // NODE_ENV is set to 'production' only during the build step
-        
-        // AWS Configuration
-        AWS_DEFAULT_REGION = 'us-east-1'
-        S3_BUCKET_NAME = 'your-portfolio-bucket-name'
-        CLOUDFRONT_DIST_ID = 'YOUR_CLOUDFRONT_DISTRIBUTION_ID'
-        
-        // Docker Configuration
+        S3_BUCKET_NAME = 'portfolio-devops-jeevan'
+        CLOUDFRONT_DIST_ID = 'E2MCM8T29VE5E7'
+
         DOCKER_IMAGE_NAME = 'devops-portfolio'
         DOCKER_IMAGE_TAG = "${BUILD_NUMBER}"
     }
@@ -28,108 +21,69 @@ pipeline {
     }
 
     stages {
-        // ==============================================================
-        // Stage 1: Checkout Source Code from GitHub
-        // ==============================================================
+
         stage('1. Checkout Code') {
             steps {
-                echo '📥 Checking out source code from GitHub...'
                 checkout scm
-                echo "Branch: ${env.BRANCH_NAME ?: 'main'}"
-                echo "Commit: ${env.GIT_COMMIT ?: 'unknown'}"
             }
         }
 
-        // ==============================================================
-        // Stage 2: Verify Node.js & Install Dependencies
-        // ==============================================================
         stage('2. Install Dependencies') {
             steps {
                 dir('my-devops-portfolio') {
                     sh '''
-rm -rf node_modules
-rm -f package-lock.json
-npm install
-'''
+                    rm -rf node_modules
+                    npm ci
+                    '''
                 }
             }
         }
 
-        // ==============================================================
-        // Stage 3: Run Code Quality Checks
-        // ==============================================================
-        stage('3. Run Tests') {
+        stage('3. Build React Application') {
             steps {
                 dir('my-devops-portfolio') {
-                    echo '⚠️ Skipping lint checks for demo build'
-                }
-            }
-        }
-
-        // ==============================================================
-        // Stage 4: Build Production React Application
-        // ==============================================================
-        stage('4. Build React Application') {
-            steps {
-                dir('my-devops-portfolio') {
-                    echo '🏗️ Building the production bundle...'
                     sh 'NODE_ENV=production npm run build'
-                    sh 'ls -la dist/'
-                    echo '✅ Build completed successfully!'
                 }
             }
         }
 
-        // ==============================================================
-        // Stage 5: Docker Build
-        // ==============================================================
-        stage('5. Docker Build') {
+        stage('4. Docker Build') {
             steps {
                 dir('my-devops-portfolio') {
                     sh '''
-docker build -t devops-portfolio:${BUILD_NUMBER} .
-'''
+                    docker build \
+                    -t ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} .
+                    '''
                 }
             }
         }
 
-        // ==============================================================
-        // Stage 6: Deploy to AWS S3
-        // ==============================================================
-        stage('6. Deploying to AWS S3') {
+        stage('5. Deploy to AWS S3') {
             steps {
                 withAWS(credentials:'aws-portfolio-credentials') {
                     dir('my-devops-portfolio') {
                         sh '''
-                        aws s3 sync dist s3://portfolio-devops-jeevan --delete
+                        aws s3 sync dist s3://${S3_BUCKET_NAME} --delete
                         '''
                     }
                 }
             }
         }
 
-        // ==============================================================
-        // Stage 7: Invalidate CloudFront Cache
-        // ==============================================================
-        stage('7. Invalidate CloudFront Cache') {
+        stage('6. Invalidate CloudFront Cache') {
             steps {
                 withAWS(credentials:'aws-portfolio-credentials') {
                     sh '''
                     aws cloudfront create-invalidation \
-                    --distribution-id E2MCM8T29VE5E7 \
+                    --distribution-id ${CLOUDFRONT_DIST_ID} \
                     --paths "/*"
                     '''
                 }
             }
         }
 
-        // ==============================================================
-        // Stage 8: Deploy
-        // ==============================================================
-        stage('8. Deploying') {
+        stage('7. Deploy Container') {
             steps {
-                echo '🚀 Deploying application...'
-
                 sh '''
                 docker stop portfolio || true
                 docker rm portfolio || true
@@ -137,24 +91,25 @@ docker build -t devops-portfolio:${BUILD_NUMBER} .
                 docker run -d \
                 --name portfolio \
                 -p 80:80 \
-                devops-portfolio:${BUILD_NUMBER}
+                ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
+
+                docker image prune -f
                 '''
             }
         }
     }
-    
-    // ==============================================================
-    // Post-Build Actions (Notifications)
-    // ==============================================================
+
     post {
         always {
-            echo '🏁 Pipeline execution finished.'
+            echo 'Pipeline execution finished'
         }
+
         success {
-            echo '✅ Pipeline succeeded! Build complete.'
+            echo 'Pipeline succeeded'
         }
+
         failure {
-            echo '❌ Pipeline failed! Check the logs for details.'
+            echo 'Pipeline failed'
         }
     }
 }
