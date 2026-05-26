@@ -99,9 +99,11 @@ docker build -t devops-portfolio:${BUILD_NUMBER} .
         stage('6. Deploy to AWS S3') {
             steps {
                 withAWS(credentials:'aws-portfolio-credentials') {
-                    sh '''
-                    ansible-playbook ansible/deploy-s3.yml
-                    '''
+                    dir('my-devops-portfolio') {
+                        sh '''
+                        aws s3 sync dist s3://portfolio-devops-jeevan --delete
+                        '''
+                    }
                 }
             }
         }
