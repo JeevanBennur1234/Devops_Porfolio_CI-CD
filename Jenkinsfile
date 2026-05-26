@@ -101,7 +101,11 @@ pipeline {
 
     post {
         always {
-            echo 'Pipeline execution finished now'
+            sh '''
+            docker image prune -f
+            docker builder prune -f
+            '''
+            cleanWs()
         }
 
         success {
