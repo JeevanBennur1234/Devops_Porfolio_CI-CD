@@ -94,9 +94,22 @@ docker build -t devops-portfolio:${BUILD_NUMBER} .
         }
 
         // ==============================================================
-        // Stage 6: Deploy
+        // Stage 6: Deploy to AWS S3
         // ==============================================================
-        stage('6. Deploying') {
+        stage('6. Deploy to AWS S3') {
+            steps {
+                withAWS(credentials:'aws-portfolio-credentials') {
+                    sh '''
+                    ansible-playbook ansible/deploy-s3.yml
+                    '''
+                }
+            }
+        }
+
+        // ==============================================================
+        // Stage 7: Deploy
+        // ==============================================================
+        stage('7. Deploying') {
             steps {
                 echo '🚀 Deploying application...'
 
