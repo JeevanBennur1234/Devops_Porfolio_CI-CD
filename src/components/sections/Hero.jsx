@@ -15,6 +15,9 @@ export default function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
+          <span className="inline-block px-3 py-1 mb-4 text-xs font-mono bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 rounded-full">
+            v2.0.0 - CI/CD Pipeline
+          </span>
           <h2 className="text-primary-500 font-semibold tracking-widest uppercase text-sm sm:text-base mb-6">
             Hi, my name is
           </h2>
