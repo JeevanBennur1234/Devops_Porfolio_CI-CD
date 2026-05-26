@@ -5,4 +5,4 @@
   tasks:
     - name: Sync build files to S3
       shell: |
-        aws s3 sync ./my-devops-portfolio/dist s3://portfolio-devops-jeevan --delete
+        aws s3 sync ../my-devops-portfolio/dist s3://portfolio-devops-jeevan --delete
