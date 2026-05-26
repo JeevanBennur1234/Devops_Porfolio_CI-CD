@@ -96,7 +96,7 @@ docker build -t devops-portfolio:${BUILD_NUMBER} .
         // ==============================================================
         // Stage 6: Deploy to AWS S3
         // ==============================================================
-        stage('6. Deploy to AWS S3') {
+        stage('6. Deploying to AWS S3') {
             steps {
                 withAWS(credentials:'aws-portfolio-credentials') {
                     dir('my-devops-portfolio') {
