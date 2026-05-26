@@ -33,7 +33,19 @@ export default {
       },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
-      }
+      },
+      boxShadow: {
+        'glow': '0 0 20px rgba(20, 184, 166, 0.35)',
+        'glow-lg': '0 0 40px rgba(20, 184, 166, 0.25)',
+      },
+      borderRadius: {
+        'xl': '1rem',
+        '2xl': '1.25rem',
+        '3xl': '1.5rem',
+      },
+      transitionDuration: {
+        '250': '250ms',
+      },
     },
   },
   plugins: [],
