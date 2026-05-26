@@ -33,7 +33,7 @@ pipeline {
                 dir('my-devops-portfolio') {
                     sh '''
                     rm -rf node_modules
-                    npm ci
+                    npm install
                     '''
                 }
             }
