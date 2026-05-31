@@ -102,26 +102,64 @@ flowchart TB
 
 ```mermaid
 gitGraph
-    commit id: "Initial Commit"
-    branch feature/aws-deployment-docs
-    commit id: "Add AWS docs"
+    commit id: "Initial scaffold" tag: "v1.0.0"
+    branch develop
+    commit id: "dev base"
+    branch feature/certifications
+    commit id: "certifications"
+    commit id: "resume download"
+    checkout develop
+    merge feature/certifications
+    branch release/v1.1
+    commit id: "bump 1.1.0"
     checkout main
-    branch feature/ui-tweaks
-    commit id: "UI improvements"
+    merge release/v1.1 tag: "v1.1.0"
+    checkout develop
+    merge release/v1.1
+    branch feature/blog
+    commit id: "blog + seo"
+    checkout develop
+    merge feature/blog
+    branch release/v1.2
+    commit id: "bump 1.2.0"
     checkout main
-    merge feature/aws-deployment-docs
-    merge feature/ui-tweaks
-    commit id: "Pipeline updates"
-    branch feature/docker-setup
-    commit id: "Add Dockerfile"
-    commit id: "Add docker-compose"
+    merge release/v1.2 tag: "v1.2.0"
+    checkout develop
+    merge release/v1.2
+    branch feature/terminal
+    commit id: "terminal + theme"
+    checkout develop
+    merge feature/terminal
+    branch release/v1.3
+    commit id: "bump 1.3.0"
     checkout main
-    merge feature/docker-setup
+    merge release/v1.3 tag: "v1.3.0"
+    checkout develop
+    merge release/v1.3
+    branch feature/perf
+    commit id: "code splitting"
+    commit id: "monitoring"
+    checkout develop
+    merge feature/perf
+    branch hotfix/cls
+    commit id: "fix layout shift"
+    checkout main
+    merge hotfix/cls
+    branch release/v2.0
+    commit id: "bump 2.0.0"
+    checkout main
+    merge release/v2.0 tag: "v2.0.0"
+    checkout develop
+    merge release/v2.0
 ```
 
-- **main**: Production-ready code, all merges go here
-- **feature/***: Feature branches for isolated development
-- Branches are NOT deleted after merge (preserved for audit trail)
+| Branch | Purpose | Base | Merges Into |
+|--------|---------|------|-------------|
+| `main` | Production-ready, tagged releases | — | — |
+| `develop` | Integration branch | `main` | `main` (via release) |
+| `feature/*` | New feature development | `develop` | `develop` |
+| `release/*` | Release prep (version bump, tag) | `develop` | `main` + `develop` |
+| `hotfix/*` | Urgent production fixes | `main` | `main` + `develop` |
 
 ## Network Architecture
 

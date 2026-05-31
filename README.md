@@ -55,8 +55,13 @@ my-devops-portfolio/
 ├── docker-compose.yml          # Docker Compose configuration
 ├── nginx.conf                  # Nginx SPA configuration
 ├── .dockerignore               # Docker build exclusions
-├── Jenkinsfile                 # Jenkins CI/CD pipeline definition
+├── Jenkinsfile                 # Jenkins CI/CD pipeline definition (v2.0)
 ├── .env.example                # Environment variables template
+├── version.txt                 # Current semantic version
+├── CHANGELOG.md                # Version history log
+├── RELEASE_NOTES.md            # Detailed release notes
+├── DEPLOYMENT-DIAGRAM.md       # Pipeline and network diagrams
+├── GIT-COMMANDS.md             # Git command reference
 ├── ARCHITECTURE.md             # Architecture diagrams & tool integration
 ├── WORKFLOW.md                 # Detailed CI/CD workflow documentation
 ├── AWS-DEPLOYMENT.md           # AWS setup guide, security & cost analysis
@@ -152,9 +157,25 @@ ansible-playbook -i ansible/inventory.ini ansible/deploy.yml
 
 ## 🔀 Git Branching Strategy
 
-- `main` — Production-ready code
-- `feature/*` — Feature development branches
-- Branches are preserved after merging for audit trail
+```
+main        ─── Production-ready, tagged releases
+develop     ─── Integration branch for features
+feature/*   ─── New features (merge → develop)
+release/*   ─── Release preparation (merge → main + develop)
+hotfix/*    ─── Urgent production fixes (merge → main + develop)
+```
+
+### Releases
+
+| Version | Tag | Date | Description |
+|---------|-----|------|-------------|
+| v1.0.0  | `v1.0.0` | 2026-04-15 | Initial Portfolio |
+| v1.1.0  | `v1.1.0` | 2026-04-28 | Certifications and Resume |
+| v1.2.0  | `v1.2.0` | 2026-05-10 | Blog and SEO |
+| v1.3.0  | `v1.3.0` | 2026-05-20 | Interactive Terminal and Theme Toggle |
+| v2.0.0  | `v2.0.0` | 2026-05-31 | Performance Optimization and Monitoring |
+
+See [CHANGELOG.md](CHANGELOG.md) and [RELEASE_NOTES.md](RELEASE_NOTES.md) for details.
 
 ## 📖 Documentation
 
@@ -163,6 +184,10 @@ ansible-playbook -i ansible/inventory.ini ansible/deploy.yml
 | [ARCHITECTURE.md](ARCHITECTURE.md) | System architecture diagrams and tool integration |
 | [WORKFLOW.md](WORKFLOW.md) | Detailed CI/CD workflow and tool explanations |
 | [AWS-DEPLOYMENT.md](AWS-DEPLOYMENT.md) | AWS setup, security, and cost analysis |
+| [CHANGELOG.md](CHANGELOG.md) | Version history (Keep a Changelog format) |
+| [RELEASE_NOTES.md](RELEASE_NOTES.md) | Detailed release notes per version |
+| [DEPLOYMENT-DIAGRAM.md](DEPLOYMENT-DIAGRAM.md) | Deployment pipeline and network architecture diagrams |
+| [GIT-COMMANDS.md](GIT-COMMANDS.md) | Complete git commands for all releases |
 
 ## 📝 Environment Variables
 
