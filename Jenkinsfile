@@ -246,7 +246,6 @@ EOF
 
         failure {
             echo "Pipeline failed for ${env.BRANCH_NAME}"
-            currentBuild.result = 'FAILURE'
         }
 
         unstable {
