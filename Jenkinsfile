@@ -17,7 +17,6 @@ pipeline {
         EC2_SSH_KEY = 'ec2-ssh-key'
 
         VERSION_FILE = 'version.txt'
-        SEMVER = sh(script: "cat ${VERSION_FILE} 2>/dev/null || echo '0.0.0'", returnStdout: true).trim()
     }
 
     options {
@@ -79,14 +78,17 @@ pipeline {
         // ============================================================
         stage('5. Docker Build') {
             steps {
-                dir('my-devops-portfolio') {
-                    sh """
-                    docker build \
-                        -t ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} \
-                        -t ${DOCKER_IMAGE_NAME}:latest \
-                        -t ${DOCKER_IMAGE_NAME}:${SEMVER} \
-                        .
-                    """
+                script {
+                    def semver = readFile(VERSION_FILE).trim()
+                    dir('my-devops-portfolio') {
+                        sh """
+                        docker build \
+                            -t ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} \
+                            -t ${DOCKER_IMAGE_NAME}:latest \
+                            -t ${DOCKER_IMAGE_NAME}:${semver} \
+                            .
+                        """
+                    }
                 }
             }
         }
@@ -96,7 +98,7 @@ pipeline {
         // ============================================================
         stage('6. Deploy to AWS S3') {
             when {
-                expression { env.BRANCH_NAME == 'main' || env.BRANCH_NAME.startsWith('release/') }
+                expression { env.BRANCH_NAME && (env.BRANCH_NAME == 'main' || env.BRANCH_NAME.startsWith('release/')) }
             }
             steps {
                 withAWS(credentials:'aws-portfolio-credentials') {
@@ -120,7 +122,7 @@ pipeline {
         // ============================================================
         stage('7. Deploy to EC2') {
             when {
-                expression { env.BRANCH_NAME == 'main' || env.BRANCH_NAME.startsWith('release/') }
+                expression { env.BRANCH_NAME && (env.BRANCH_NAME == 'main' || env.BRANCH_NAME.startsWith('release/')) }
             }
             steps {
                 script {
@@ -152,7 +154,7 @@ EOF
         // ============================================================
         stage('8. Verify EC2 Deployment') {
             when {
-                expression { env.BRANCH_NAME == 'main' || env.BRANCH_NAME.startsWith('release/') }
+                expression { env.BRANCH_NAME && (env.BRANCH_NAME == 'main' || env.BRANCH_NAME.startsWith('release/')) }
             }
             steps {
                 sh """
@@ -168,7 +170,7 @@ EOF
         // ============================================================
         stage('9. Invalidate CloudFront Cache') {
             when {
-                expression { env.BRANCH_NAME == 'main' || env.BRANCH_NAME.startsWith('release/') }
+                expression { env.BRANCH_NAME && (env.BRANCH_NAME == 'main' || env.BRANCH_NAME.startsWith('release/')) }
             }
             steps {
                 withAWS(credentials:'aws-portfolio-credentials') {
@@ -187,7 +189,7 @@ EOF
         // ============================================================
         stage('10. Version Tag & Release') {
             when {
-                expression { env.BRANCH_NAME.startsWith('release/') }
+                expression { env.BRANCH_NAME && env.BRANCH_NAME.startsWith('release/') }
             }
             steps {
                 script {
@@ -208,7 +210,7 @@ EOF
         // ============================================================
         stage('11. Performance Check') {
             when {
-                expression { env.BRANCH_NAME == 'main' }
+                expression { env.BRANCH_NAME && env.BRANCH_NAME == 'main' }
             }
             steps {
                 sh '''
@@ -236,20 +238,20 @@ EOF
         }
 
         success {
-            echo "Pipeline succeeded for ${env.BRANCH_NAME}"
+            echo "Pipeline succeeded for ${env.BRANCH_NAME ?: 'unknown'}"
             script {
-                if (env.BRANCH_NAME == 'main' || env.BRANCH_NAME.startsWith('release/')) {
+                if (env.BRANCH_NAME && (env.BRANCH_NAME == 'main' || env.BRANCH_NAME.startsWith('release/'))) {
                     echo "Deployment live at: https://d1b7vq4z9c.cloudfront.net"
                 }
             }
         }
 
         failure {
-            echo "Pipeline failed for ${env.BRANCH_NAME}"
+            echo "Pipeline failed for ${env.BRANCH_NAME ?: 'unknown'}"
         }
 
         unstable {
-            echo "Pipeline unstable for ${env.BRANCH_NAME}"
+            echo "Pipeline unstable for ${env.BRANCH_NAME ?: 'unknown'}"
         }
     }
 }
