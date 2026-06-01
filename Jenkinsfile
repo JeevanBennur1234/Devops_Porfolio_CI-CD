@@ -38,6 +38,7 @@ pipeline {
                 checkout scm
                 script {
                     env.GIT_COMMIT = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
+                    env.BRANCH_NAME = sh(script: 'git rev-parse --abbrev-ref HEAD', returnStdout: true).trim()
                 }
             }
         }
@@ -111,18 +112,15 @@ pipeline {
         // STAGE 6: Deploy to AWS S3
         // ============================================================
         stage('6. Deploy to AWS S3') {
-            when {
-                expression { env.BRANCH_NAME && (env.BRANCH_NAME == 'main' || env.BRANCH_NAME.startsWith('release/')) }
-            }
             steps {
                 withAWS(credentials:'aws-portfolio-credentials') {
                     dir('my-devops-portfolio') {
                         sh """
-                        aws s3 sync dist/ s3://${S3_BUCKET_NAME}/ \
+                        aws s3 sync dist/ s3://portfolio-devops-jeevan/ \
                             --delete \
                             --exclude "index.html" \
                             --cache-control "max-age=31536000, public, immutable"
-                        aws s3 cp dist/index.html s3://${S3_BUCKET_NAME}/index.html \
+                        aws s3 cp dist/index.html s3://portfolio-devops-jeevan/index.html \
                             --cache-control "no-cache, no-store, must-revalidate" \
                             --content-type "text/html"
                         """
@@ -183,9 +181,6 @@ EOF
         // STAGE 9: Invalidate CloudFront Cache
         // ============================================================
         stage('9. Invalidate CloudFront Cache') {
-            when {
-                expression { env.BRANCH_NAME && (env.BRANCH_NAME == 'main' || env.BRANCH_NAME.startsWith('release/')) }
-            }
             steps {
                 withAWS(credentials:'aws-portfolio-credentials') {
                     sh """
