@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-scroll';
 import { Menu, X, Moon, Sun, TerminalSquare } from 'lucide-react';
 import { useTheme } from '../../hooks/useTheme';
@@ -8,6 +8,9 @@ const navLinks = [
   { name: 'Skills', to: 'skills' },
   { name: 'Projects', to: 'projects' },
   { name: 'Experience', to: 'experience' },
+  { name: 'Certifications', to: 'certifications' },
+  { name: 'Blog', to: 'blog' },
+  { name: 'Terminal', to: 'terminal' },
   { name: 'Contact', to: 'contact' },
 ];
 

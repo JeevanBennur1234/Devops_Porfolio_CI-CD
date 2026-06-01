@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 import { portfolioContent } from '../../data/content';
 import { GraduationCap, Award } from 'lucide-react';

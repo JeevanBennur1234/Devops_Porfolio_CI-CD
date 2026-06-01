@@ -1,7 +1,5 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 import { portfolioContent } from '../../data/content';
-import { Briefcase } from 'lucide-react';
 
 export default function Experience() {
   const { experience } = portfolioContent;

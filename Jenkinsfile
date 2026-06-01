@@ -17,6 +17,8 @@ pipeline {
         EC2_SSH_KEY = 'ec2-ssh-key'
 
         VERSION_FILE = 'version.txt'
+
+        GIT_COMMIT = ''
     }
 
     options {
@@ -34,6 +36,9 @@ pipeline {
         stage('1. Checkout Code') {
             steps {
                 checkout scm
+                script {
+                    env.GIT_COMMIT = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
+                }
             }
         }
 
@@ -68,7 +73,16 @@ pipeline {
         stage('4. Build React Application') {
             steps {
                 dir('my-devops-portfolio') {
-                    sh 'NODE_ENV=production npm run build'
+                    script {
+                        def semver = readFile('../version.txt').trim()
+                        def buildDate = sh(script: "date +%Y-%m-%d", returnStdout: true).trim()
+                        writeFile file: 'VERSION', text: "v${semver}\nRelease Date: ${buildDate}\nBuild: ${env.BUILD_NUMBER}\n"
+                    }
+                    sh """
+                    GIT_COMMIT=${env.GIT_COMMIT} \
+                    BUILD_NUMBER=${env.BUILD_NUMBER} \
+                    NODE_ENV=production npm run build
+                    """
                 }
             }
         }

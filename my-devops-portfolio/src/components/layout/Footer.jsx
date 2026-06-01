@@ -32,6 +32,7 @@ export default function Footer() {
         <div className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-800 text-center text-slate-500 dark:text-slate-400 text-sm">
           <p>© {new Date().getFullYear()} {hero.name}. All rights reserved.</p>
           <p className="mt-1">Built with React, Tailwind CSS, and Framer Motion.</p>
+          <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">v2.0.0 &bull; CI/CD Enabled</p>
         </div>
       </div>
     </footer>
