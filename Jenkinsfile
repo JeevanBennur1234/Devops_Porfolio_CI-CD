@@ -109,9 +109,18 @@ pipeline {
         }
 
         // ============================================================
-        // STAGE 6: Deploy to AWS S3
+        // STAGE 6: Run Ansible Automation
         // ============================================================
-        stage('6. Deploy to AWS S3') {
+        stage('6. Run Ansible Automation') {
+            steps {
+                sh 'ansible-playbook -i ansible/inventory.ini ansible/deploy.yml'
+            }
+        }
+
+        // ============================================================
+        // STAGE 7: Deploy to AWS S3
+        // ============================================================
+        stage('7. Deploy to AWS S3') {
             steps {
                 withAWS(credentials:'aws-portfolio-credentials') {
                     dir('my-devops-portfolio') {
@@ -130,9 +139,9 @@ pipeline {
         }
 
         // ============================================================
-        // STAGE 7: Deploy to EC2 via Ansible
+        // STAGE 8: Deploy to EC2 via Ansible
         // ============================================================
-        stage('7. Deploy to EC2') {
+        stage('8. Deploy to EC2') {
             when {
                 expression { env.BRANCH_NAME && (env.BRANCH_NAME == 'main' || env.BRANCH_NAME.startsWith('release/')) }
             }
@@ -162,9 +171,9 @@ EOF
         }
 
         // ============================================================
-        // STAGE 8: Verify EC2 Deployment (Health Check)
+        // STAGE 9: Verify EC2 Deployment (Health Check)
         // ============================================================
-        stage('8. Verify EC2 Deployment') {
+        stage('9. Verify EC2 Deployment') {
             when {
                 expression { env.BRANCH_NAME && (env.BRANCH_NAME == 'main' || env.BRANCH_NAME.startsWith('release/')) }
             }
@@ -178,9 +187,9 @@ EOF
         }
 
         // ============================================================
-        // STAGE 9: Invalidate CloudFront Cache
+        // STAGE 10: Invalidate CloudFront Cache
         // ============================================================
-        stage('9. Invalidate CloudFront Cache') {
+        stage('10. Invalidate CloudFront Cache') {
             steps {
                 withAWS(credentials:'aws-portfolio-credentials') {
                     sh """
@@ -194,9 +203,9 @@ EOF
         }
 
         // ============================================================
-        // STAGE 10: Version Tag & Release
+        // STAGE 11: Version Tag & Release
         // ============================================================
-        stage('10. Version Tag & Release') {
+        stage('11. Version Tag & Release') {
             when {
                 expression { env.BRANCH_NAME && env.BRANCH_NAME.startsWith('release/') }
             }
@@ -215,9 +224,9 @@ EOF
         }
 
         // ============================================================
-        // STAGE 11: Performance Check (Lighthouse CI - v2.0+)
+        // STAGE 12: Performance Check (Lighthouse CI - v2.0+)
         // ============================================================
-        stage('11. Performance Check') {
+        stage('12. Performance Check') {
             when {
                 expression { env.BRANCH_NAME && env.BRANCH_NAME == 'main' }
             }
