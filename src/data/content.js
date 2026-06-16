@@ -77,6 +77,7 @@ export const portfolioContent = {
         { name: "Grafana", level: 85 },
         { name: "ELK Stack", level: 80 },
         { name: "Datadog", level: 70 },
+        { name: "CloudWatch", level: 80 },
       ]
     },
     {
@@ -172,7 +173,8 @@ export const portfolioContent = {
   certifications: [
     { name: "AWS Certified Solutions Architect - Associate", year: "2021" },
     { name: "Certified Kubernetes Administrator (CKA)", year: "2022" },
-    { name: "HashiCorp Certified: Terraform Associate", year: "2023" }
+    { name: "HashiCorp Certified: Terraform Associate", year: "2023" },
+    { name: "AWS Certified DevOps Engineer - Professional", year: "2024" }
   ],
 
   // ----- TESTIMONIALS SECTION -----

@@ -43,7 +43,7 @@ export default function About() {
           >
             <div className="aspect-square max-w-md mx-auto relative rounded-2xl overflow-hidden group">
               <div className="absolute inset-0 bg-primary-500/20 group-hover:bg-transparent transition-colors duration-300 z-10 rounded-2xl"></div>
-              {/* Optional: Add a real profile picture here. Using a placeholder or tech illustration for now */}
+              {/* Profile picture placeholder — replace with an <img> tag pointing to your photo */}
               <div className="w-full h-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center border-4 border-white dark:border-slate-800 rounded-2xl">
                 <Server className="w-32 h-32 text-slate-400 dark:text-slate-500" />
               </div>
